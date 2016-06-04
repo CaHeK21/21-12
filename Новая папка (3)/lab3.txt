@@ -1,0 +1,70 @@
+﻿1.	Измените цвет всех красных деталей на оранжевый.
+		UPDATE DET 
+     SET COLOR='оранжевый'
+     WHERE COLOR='Красный';
+
+2.	Удалите все изделия, для которых нет поставок деталей.
+		DELETE FROM IZD
+     WHERE NOT EXISTS (SELECT * FROM MAIN 
+     WHERE MAIN.NIZD=IZD.NIZD);
+
+3.	Увеличьте размер поставки на 10 процентов для всех поставок тех поставщи¬ков, которые поставляют какую-либо красную деталь.
+	CREATE TABLE RED_TABLE (NPOST CHAR(5));
+     INSERT INTO RED_TABLE (NPOST)
+     SELECT DISTINCT NPOST FROM MAIN, DET
+     WHERE MAIN.NDET = DET.NDET AND COLOR = 'Красный';
+     UPDATE MAIN SET KOL = KOL * 1.1
+     WHERE NPOST IN (SELECT NPOST FROM RED_TABLE);
+     DROP TABLE RED_TABLE;
+
+4.	Удалите все изделия из Рима и все соответствующие поставки.
+	DELETE FROM MAIN WHERE 'Рим'= (SELECT GOROD FROM IZD 
+     WHERE IZD.NIZD=MAIN.NIZD);
+     DELETE FROM IZD WHERE GOROD = 'Рим';
+
+5.	Вставьте в таблицу S нового поставщика S10. Его фамилия и город — 'Уайт' и 'Нью-Йорк' соответственно, а состояние еще неизвестно.
+		INSERT INTO POST (NPOST, FAM, GOROD) 
+     VALUES('s10', 'Уайт', 'Нью-Йорк');
+
+6.	Постройте таблицу, содержащую список номеров деталей, которые поставляются либо каким-нибудь поставщиком из Лондона, либо для какого-либо изделия в Лондоне.
+	CREATE TABLE SPISOK (NDET CHAR (6));
+     INSERT INTO SPISOK (NDET)
+     SELECT DISTINCT NDET FROM MAIN
+     WHERE MAIN.NPOST IN
+     (SELECT NPOST FROM POST
+     WHERE GOROD = 'Лондон') OR NIZD IN
+     (SELECT NIZD FROM IZD
+     WHERE GOROD = 'Лондон');
+
+7.	Постройте таблицу, содержащую список номеров изделий, которые либо на¬ходятся в Лондоне, либо для них поставляются детали каким-нибудь постав¬щиком из Лондона.
+CREATE TABLE SPISOK_IZD (NIZD CHAR (6));
+     INSERT INTO SPISOK_IZD (NIZD)
+     SELECT DISTINCT NIZD FROM MAIN
+     WHERE NIZD IN
+     (SELECT NIZD FROM IZD
+     WHERE GOROD = 'Лондон') OR MAIN.NPOST IN
+     (SELECT NPOST FROM POST
+     WHERE GOROD = 'Лондон');
+     SELECT * FROM SPISOK_IZD;
+     DROP TABLE SPISOK_IZD;
+
+
+8.	Добавьте 10 к состоянию всех поставщиков, состояние которых в настоящее время меньше, чем состояние поставщика S4.
+	  UPDATE POST SET SOST=SOST+10 
+     WHERE SOST<(SELECT SOST FROM POST WHERE NPOST='s4');
+
+9.	Постройте внешнее	естественное соединение изделии и поставок по номерам изделий.
+	CREATE TABLE REZULTAT
+(NIZD CHAR(6), NAME CHAR(25), GOROD CHAR(15), NPOST CHAR(5),NDET CHAR(6), KOL INTEGER);
+INSERT INTO REZULTAT 
+SELECT IZD.*, MAIN.NPOST, 
+MAIN.NDET, MAIN.KOL FROM IZD, MAIN 
+WHERE IZD.NIZD = MAIN.NIZD;
+INSERT INTO REZULTAT 
+SELECT IZD.*, 'bb', 'bb','0' FROM IZD WHERE NOT EXISTS (SELECT * FROM MAIN 
+WHERE MAIN.NIZD = IZD.NIZD);
+SELECT * FROM REZULTAT;
+DROP TABLE REZULTAT;
+
+
+

@@ -1,0 +1,29 @@
+﻿1. Создайте для базы данных поставщиков, деталей и изделий представление. состоящее из всех изделий (включающее только поля номера изделия и го¬рода), которые поставляются поставщиком S1 и используют деталь Р1.
+SELECT DISTINCT NIZD FROM MAIN MAIN1
+WHERE NOT EXISTS (SELECT NDET FROM MAIN MAIN2
+WHERE MAIN2.NPOST='s1'AND NOT EXISTS
+(SELECT * FROM MAIN MAIN3
+WHERE MAIN3.NDET=MAIN2.NDET
+AND MAIN3.NIZD=MAIN1.NIZD));
+
+2. Является ли Ваше решение упражнения 1 обновляемым представлением?
+а) Если да, то можно ли для него специфицировать вариант CHECK?
+б) Если нет, найдите обновляемую версию представления и повторите это упражне¬ние.
+
+Представление не обновляемо, поскольку во фразе FROM в его определении указывается несколько таблиц 
+CREATE VIEW ZADANI2 (NIZD, GOROD) AS SELECT IZD.NIZD, IZD.NIZD
+FROM IZD.NIZD IN (SELECT NIZD  FROM MAIN
+WHERE NPOST = 's1') AND IZD.NIZD IN (SELECT NIZD 
+     FROM MAIN WHERE NDET='p1');
+
+3. Создайте представление, состоящее из номеров поставщиков и номеров дета¬лей, для таких поставщиков и деталей, которые не “соразмещены”.
+CREATE VIEW ZADANI3 AS 
+     SELECT NPOST, NDET FROM POST, DET
+     WHERE POST.GOROD!=DET.GOROD;
+     SELECT * FROM ZADANI3;
+
+4. Создайте представление, состоящее из записей поставщиков, только для тех поставщиков, которые находятся в Лондоне.
+CREATE VIEW ZADANI4 AS 
+     SELECT * FROM POST
+     WHERE POST.GOROD='Лондон';
+     SELECT * FROM ZADANI4;

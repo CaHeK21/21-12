@@ -1,0 +1,103 @@
+﻿1)Выдать названия изделии, для которых поставляются детали поставщиком S1.
+SELECT IZD.NAME FROM IZD 
+INNER JOIN MAIN ON MAIN.NIZD=IZD.NIZD
+WHERE MAIN.NIZD=(SELECT MAIN.NIZD FROM POST 
+WHERE POST.NPOST=MAIN.NPOST AND POST.NPOST='s1');
+
+2)Выдать цвета детален, поставляемых поставщиком S1.
+SELECT DET.COLOR FROM DET 
+INNER JOIN MAIN ON MAIN.NDET=DET.NDET
+WHERE MAIN.NDET=(SELECT MAIN.NDET FROM POST 
+WHERE POST.NPOST=MAIN.NPOST AND POST.NPOST='s1');
+
+3)Выдать номера деталей, поставляемых для какого-либо изделия в Лондоне.
+SELECT MAIN.NDET FROM MAIN
+WHERE MAIN.NIZD=(SELECT MAIN.NIZD FROM MAIN
+WHERE IZD.NIZD=MAIN.NIZD AND IZD.GOROD='Лондон');
+
+4)Выдать номера изделии, использующих по крайней мере одну деталь, поставляемую поставщиком S1.
+SELECT IZD.NIZD FROM IZD
+INNER JOIN MAIN ON MAIN.NIZD=IZD.NIZD
+WHERE MAIN.NIZD=(SELECT MAIN.NIZD FROM POST 
+WHERE POST.NPOST=MAIN.NPOST AND POST.NPOST='s1');
+
+5) Выдать номера поставщиков, поставляющих по крайней мере одну деталь, 	
+поставляемую по крайней мере одним поставщиком, который поставляет по крайней мере одну красную деталь.
+SELECT DISTINCT MAIN.NPOST FROM MAIN
+WHERE MAIN.NDET IN (SELECT MAIN.NDET FROM MAIN
+WHERE MAIN.NPOST IN(SELECT MAIN.NPOST FROM MAIN
+WHERE MAIN.NDET IN (SELECT MAIN.NDET FROM DET
+WHERE MAIN.NDET=DET.NDET AND DET.COLOR='Красный')));
+
+6)Выдать номера поставщиков, имеющих состояние меньшее, чем у постав¬щика S1.
+SELECT NPOST FROM POST
+WHERE SOST<(SELECT SOST FROM POST WHERE NPOST='s1' );
+
+7)Выдать номера поставщиков, поставляющих детали для какого-либо изделия с деталью Р1 в количестве, большем, 
+чем средний объем поставок детали Р1 для этого изделия. Примечание. В этом упражнении нужно использовать стан¬дартную функцию AVG. 
+SELECT NPOST FROM MAIN 
+ WHERE  MAIN.NDET='p1' AND
+ KOL>(SELECT AVG(KOL) FROM MAIN WHERE MAIN.NDET='p1');
+
+8)Повторите упражнение  3 и используйте в Вашем решении EXISTS.
+SELECT MAIN.NDET FROM MAIN
+WHERE EXISTS (SELECT MAIN.NIZD FROM IZD 
+WHERE IZD.NIZD=MAIN.NIZD AND IZD.GOROD='Лондон');
+
+
+
+9)Повторите упражнение  4 и используйте в Вашем решении EXISTS.
+SELECT IZD.NIZD FROM IZD
+INNER JOIN MAIN ON MAIN.NIZD=IZD.NIZD
+WHERE EXISTS (SELECT MAIN.NIZD FROM POST 
+WHERE POST.NPOST=MAIN.NPOST AND POST.NPOST='s1');
+
+10) Выдать номера изделий, для которых не поставляет какой-либо красной детали поставщик из Лондона.
+SELECT MAIN.NIZD FROM MAIN
+WHERE NOT EXISTS (SELECT MAIN.NDET FROM DET
+WHERE MAIN.NDET=DET.NDET AND DET.COLOR='Красный') AND
+ EXISTS (SELECT * FROM POST WHERE MAIN.NPOST=POST.NPOST AND POST.GOROD='Лондон');
+
+11)Выдать номера изделий, для которых детали полностью поставляет поставщик S1.
+SELECT MAIN.NIZD FROM MAIN
+WHERE EXISTS (SELECT * FROM DET
+WHERE MAIN.NPOST='s1');
+
+12)Выдать номера деталей, поставляемых для всех изделий в Лондон.
+SELECT MAIN.NDET FROM MAIN
+WHERE EXISTS(SELECT * FROM IZD
+WHERE MAIN.NIZD=IZD.NIZD AND IZD.GOROD='Лондон');
+
+13)Выдать номера поставщиков, поставляющих одну и ту же деталь для всех изделий.
+SELECT DISTINCT NPOST FROM MAIN MAIN1
+WHERE EXISTS 
+   (SELECT NDET FROM DET 
+   WHERE NOT EXISTS
+     (SELECT NIZD FROM IZD 
+      WHERE NOT EXISTS
+        (SELECT * FROM MAIN MAIN2
+        WHERE MAIN2.NPOST=MAIN1.NPOST
+        AND MAIN2.NDET=DET.NDET
+        AND MAIN2.NIZD=IZD.NIZD)));
+		
+14)Выдать номера изделий, для которых поставляются по крайней мере все детали, имеющиеся у поставщика S1.
+SELECT MAIN.NIZD FROM MAIN WHERE EXISTS (SELECT * FROM MAIN T2 WHERE T2.NPOST='S1' AND MAIN.NIZD=T2.NIZD) AND EXISTS (SELECT * FROM MAIN T3 WHERE MAIN.NIZD=T3.NIZD AND MAIN.NPOST=T3.NPOST) AND EXISTS(SELECT * FROM MAIN T4 WHERE T4.NDET=MAIN.NDET);
+
+15)Выдать общее число изделии, для которых поставляет детали поставщик S1.
+SELECT COUNT(DISTINCT MAIN.NIZD) FROM MAIN WHERE MAIN.NPOST = 's1';
+
+16). Выдать общее количество деталей Р1, поставляемых поставщиком S1.
+SELECT COUNT(MAIN.NDET) FROM MAIN
+WHERE MAIN.NDET='p1' AND EXISTS(SELECT MAIN.NPOST FROM MAIN WHERE MAIN.NPOST = 's1');
+
+17) Для каждой поставляемой для некоторого изделия детали выдать ее номер.  номер изделия и соответствующее общее количество деталей.
+SELECT NDET, NIZD, SUM(KOL) FROM MAIN 
+GROUP BY NDET, NIZD;
+
+18)Выдать номера изделии, для которых средний объем поставки деталей Р1 больше наибольшего объема поставки любой детали для изделия J1.
+SELECT NIZD FROM MAIN MAIN1 WHERE NDET = 'p1' AND KOL>
+  (SELRCT AVG(KOL) FROM MAIN MAIN2
+  WHERE MAIN2.NDET='p1' AND MAIN2.NIZD='j1');
+  
+19)Постройте упорядоченный список всех городов, в которых размещаются по крайней мере один поставщик, деталь или изделие.
+SELECT GOROD FROM DET UNION SELECT GOROD FROM POST UNION SELECT GOROD FROM IZD ORDER BY GOROD;

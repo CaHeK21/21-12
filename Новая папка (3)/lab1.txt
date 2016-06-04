@@ -1,0 +1,97 @@
+1) Выдать полный список деталей для всех изделии.
+SELECT IZD.NAME, DET.NAME, IZD.GOROD  FROM DET, IZD, MAIN 
+WHERE  MAIN.NDET=DET.NDET AND MAIN.NIZD=IZD.NIZD;
+
+2) Выдать полный список деталей для всех изделии, изготавливаемых в    Лондоне.
+SELECT DISTINCT IZD.NAME, DET.NAME, IZD.GOROD  FROM DET, IZD, MAIN 
+WHERE   MAIN.NDET=DET.NDET AND  IZD.GOROD='Лондон' ;
+
+3)Выдать упорядоченный список номеров поставщиков, 
+поставляющих детали для изделия номер J1.
+SELECT MAIN.NPOST FROM MAIN WHERE MAIN.NIZD='j1' ORDER BY NPOST;
+
+4)Выдать список всех поставок, в которых количество деталей 
+находится в диапазоне от 300 до 750 включительно.
+SELECT * FROM MAIN WHERE KOL BETWEEN 300 AND 750;
+
+5)Выдать список всех комбинаций “цвет детали—город, 
+где хранится деталь”, исключая дубликаты пар (цвет—город).
+SELECT DISTINCT COLOR, GOROD FROM DET;
+
+6)Выдать номера изделий и города, где они изготавливаются,
+ такие, что второй буквой названия города является “О
+SELECT NIZD, GOROD FROM IZD WHERE GOROD LIKE '_о%';
+
+7)Выдать все триплеты “помер поставщика, номер детали и 
+номер изделия”, такие, что образующие каждый из них поставщик,
+ деталь и изделие являются соразмещенными.
+ SELECT MAIN.NPOST, MAIN.NDET, MAIN.NIZD FROM DET, POST,IZD, MAIN 
+ WHERE  MAIN.NPOST=POST.NPOST AND MAIN.NIZD=IZD.NIZD 
+ AND MAIN.NDET=DET.NDET  AND (POST.GOROD=IZD.GOROD AND DET.GOROD=POST.GOROD);
+ ----------------------------------------------------------------------------------
+SELECT POST.NPOST, DET.NDET, IZD.NIZD FROM POST 
+INNER JOIN MAIN ON POST.NPOST=MAIN.NPOST
+INNER JOIN DET ON DET.NDET = MAIN.NDET
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE POST.GOROD=DET.GOROD AND POST.GOROD = IZD.GOROD;
+
+ 8)Выдать все триплеты “номер поставщика, номер детали и номер изделия”, 
+ такие, что образующие каждый из них поставщик, деталь и изделие не яв¬ляются соразмещенными.
+ SELECT MAIN.NPOST, MAIN.NDET, MAIN.NIZD FROM DET, POST,IZD, MAIN 
+ WHERE  MAIN.NPOST=POST.NPOST AND MAIN.NIZD=IZD.NIZD AND MAIN.NDET=DET.NDET  
+ AND NOT(POST.GOROD=IZD.GOROD AND DET.GOROD=POST.GOROD);
+ --------------------------------------------------------------------------
+SELECT POST.NPOST, DET.NDET, IZD.NIZD FROM POST 
+INNER JOIN MAIN ON POST.NPOST=MAIN.NPOST
+INNER JOIN DET ON DET.NDET = MAIN.NDET
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE NOT(POST.GOROD=DET.GOROD AND POST.GOROD = IZD.GOROD);
+
+ 9)Выдать все триплеты “номер поставщика, номер детали и номер изделия”, 
+ такие, что в каждом триплете указанные поставщик, деталь и изделие не являются попарно соразмещенными.
+ SELECT MAIN.NPOST, MAIN.NDET, MAIN.NIZD FROM DET, POST,IZD, MAIN 
+ WHERE  MAIN.NPOST=POST.NPOST AND MAIN.NIZD=IZD.NIZD AND MAIN.NDET=DET.NDET  
+ AND NOT(POST.GOROD=IZD.GOROD OR DET.GOROD=POST.GOROD OR DET.GOROD=IZD.GOROD);
+ --------------------------------------------------------------------------------------
+ SELECT POST.NPOST, DET.NDET, IZD.NIZD FROM POST
+INNER JOIN MAIN ON POST.NPOST=MAIN.NPOST
+INNER JOIN DET ON DET.NDET = MAIN.NDET
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE NOT(POST.GOROD=IZD.GOROD OR DET.GOROD=POST.GOROD OR DET.GOROD=IZD.GOROD);
+
+ 10) Выдать номера деталей, поставляемых каким-либо поставщиком из Лондона, для изделия,
+ изготавливаемого также в Лондоне.
+SELECT MAIN.NDET FROM MAIN
+INNER JOIN POST ON POST.NPOST=MAIN.NPOST
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE POST.GOROD='Лондон' AND IZD.GOROD='Лондон';
+ 
+11) Выдать номера деталей, поставляемых каким-либо поставщиком из Лондона.
+SELECT MAIN.NDET FROM MAIN
+INNER JOIN DET ON DET.NDET=MAIN.NDET
+WHERE DET.GOROD='Лондон';
+
+12)Выдать все пары названии городов, таких, что какой-либо поставщик 
+из первого города поставляет детали для некоторого изделия, изготавливаемого во втором городе.
+SELECT POST.GOROD, IZD.GOROD FROM MAIN
+INNER JOIN POST ON POST.NPOST=MAIN.NPOST
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE POST.GOROD!=IZD.GOROD;
+
+13)Выдать номера деталей, поставляемых для какого-либо изделия поставщиком, 
+находящимся в том же городе, где изготавливается это изделие.
+SELECT MAIN.NDET FROM MAIN
+INNER JOIN POST ON POST.NPOST=MAIN.NPOST
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE POST.GOROD=IZD.GOROD;
+
+14)Выдать номера изделий, для которых детали поставляются по крайней
+ мере одним поставщиком не из того же самого города.
+ SELECT MAIN.NIZD FROM MAIN
+INNER JOIN POST ON POST.NPOST=MAIN.NPOST
+INNER JOIN IZD ON IZD.NIZD=MAIN.NIZD
+WHERE POST.GOROD!=IZD.GOROD;
+
+15)Выдать все пары номеров деталей, таких, что некоторый поставщик поставляет обе указанные детали.
+SELECT DISTINCT  MAIN1.NDET, MAIN2.NDET FROM MAIN MAIN1, MAIN MAIN2
+WHERE MAIN1.NPOST=MAIN2.NPOST AND MAIN1.NDET!=MAIN2.NDET;
